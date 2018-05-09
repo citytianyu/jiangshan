@@ -130,6 +130,7 @@ namespace CharacterStatistics
             string resultFilename = filename;
             int lastSlashIdx = resultFilename.LastIndexOf('\\');
             resultFilename = resultFilename.Substring(0, lastSlashIdx + 1);
+            cachePath = resultFilename;
             //MessageBox.Show(resultFilename);
             resultFilename += name + num + ".txt";
 
@@ -138,10 +139,11 @@ namespace CharacterStatistics
 
         List<string> volumeContents = null;
         string currFilename = "";
+        string cachePath = "";
 
-        Dictionary<string, int>[] MegaTable = new Dictionary<string, int>[1];
-        Dictionary<string, int>[] AccTable = new Dictionary<string, int>[1];
-        int[] Sums = new int[1];
+        Dictionary<string, int>[] MegaTable = null;
+        Dictionary<string, int>[] AccTable = null;
+        int[] Sums = null;
 
         private void button3_Click(object sender, EventArgs e)
         {
@@ -327,7 +329,7 @@ namespace CharacterStatistics
                 result += pair.Key + "\t" + pair.Value.ToString() + "\t" + ratio.ToString() + "%\n";
             }
 
-            saveToFile(filename, result, "phraseStats", fileIndex);
+            saveToFile(filename, result, "PhraseStats\\phraseStats", fileIndex);
 
             totalPhraseCount = sum;
 
@@ -378,7 +380,95 @@ namespace CharacterStatistics
                 result += pair.Key + "\t" + pair.Value.ToString() + "\t" + ratio.ToString() + "%\n";
             }
 
-            saveToFile(filename, result, "AccPhraseStats", fileIndex);
+            saveToFile(filename, result, "PhraseStats\\AccPhraseStats", fileIndex);
+        }
+
+        private void btnPhraseFeature_Click(object sender, EventArgs e)
+        {
+            if (cachePath.Length == 0)
+            {
+                MessageBox.Show("No path cache!");
+                return;
+            }
+
+            if (MegaTable == null)
+            {
+                MessageBox.Show("先分析分词！");
+                return;
+            }
+
+            for (int i = 0; i < MegaTable.Length; ++i)
+            {
+                string result = "";
+
+                // 总词数
+                result += "总词数\t" + Sums[i].ToString() + "\n";
+
+                Dictionary<string, int> table = MegaTable[i];
+
+                // 平均词长
+                int lengthSum = 0;
+                foreach (var pair in table)
+                {
+                    int length = pair.Key.Length;
+                    lengthSum += length * pair.Value;
+                }
+
+                float avgLength = (float)lengthSum / Sums[i];
+                result += "平均词长\t" + avgLength.ToString() + "\n";
+
+                // 不同长度词比例
+                int[] numCharLength = { 0, 0, 0, 0, 0 };
+                foreach (var pair in table)
+                {
+                    if (pair.Key.Length > 4)
+                        numCharLength[4] += pair.Value;
+                    else if (pair.Key.Length == 4)
+                        numCharLength[3] += pair.Value;
+                    else if (pair.Key.Length == 3)
+                        numCharLength[2] += pair.Value;
+                    else if (pair.Key.Length == 2)
+                        numCharLength[1] += pair.Value;
+                    else
+                        numCharLength[0] += pair.Value;
+                }
+
+                float ratio1char = (float)numCharLength[0] / Sums[i] * 100.0f;
+                result += "一字词比例\t" + ratio1char.ToString() + "%\n";
+
+                float ratio2char = (float)numCharLength[1] / Sums[i] * 100.0f;
+                result += "二字词比例\t" + ratio2char.ToString() + "%\n";
+
+                float ratio3char = (float)numCharLength[2] / Sums[i] * 100.0f;
+                result += "三字词比例\t" + ratio3char.ToString() + "%\n";
+
+                float ratio4char = (float)numCharLength[3] / Sums[i] * 100.0f;
+                result += "四字词比例\t" + ratio4char.ToString() + "%\n";
+
+                float ratio5char = (float)numCharLength[4] / Sums[i] * 100.0f;
+                result += "四字以上词比例\t" + ratio5char.ToString() + "%\n";
+
+                // 不同词数比例
+                float ratioUnique = (float)table.Count / Sums[i] * 100.0f;
+                result += "不同词数比例\t" + ratioUnique.ToString() + "%\n";
+
+                // 出现频率只有一次或两次的词比例
+                int numOnce = 0;
+                int numTwice = 0;
+                foreach (var pair in table)
+                {
+                    if (pair.Value == 1)
+                        numOnce++;
+                    else if (pair.Value == 2)
+                        numTwice++;
+                }
+                float ratioOnce = (float)numOnce / Sums[i] * 100.0f;
+                float ratioTwice = (float)numTwice / Sums[i] * 100.0f;
+                result += "只出现一次的词比例\t" + ratioOnce.ToString() + "%\n";
+                result += "只出现两次的词比例\t" + ratioTwice.ToString() + "%\n";
+
+                saveToFile(cachePath, result, "PhraseStats\\PhraseFeature", (i + 1).ToString());
+            }
         }
     }
 }

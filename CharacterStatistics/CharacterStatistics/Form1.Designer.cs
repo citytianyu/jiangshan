@@ -36,6 +36,7 @@
             this.btnSelectPhraseFiles = new System.Windows.Forms.Button();
             this.openFileDialogPhrase = new System.Windows.Forms.OpenFileDialog();
             this.btnAnalyzePhrase = new System.Windows.Forms.Button();
+            this.btnPhraseFeature = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -110,11 +111,22 @@
             this.btnAnalyzePhrase.UseVisualStyleBackColor = true;
             this.btnAnalyzePhrase.Click += new System.EventHandler(this.btnAnalyzePhrase_Click);
             // 
+            // btnPhraseFeature
+            // 
+            this.btnPhraseFeature.Location = new System.Drawing.Point(139, 218);
+            this.btnPhraseFeature.Name = "btnPhraseFeature";
+            this.btnPhraseFeature.Size = new System.Drawing.Size(75, 23);
+            this.btnPhraseFeature.TabIndex = 6;
+            this.btnPhraseFeature.Text = "统计词汇特征";
+            this.btnPhraseFeature.UseVisualStyleBackColor = true;
+            this.btnPhraseFeature.Click += new System.EventHandler(this.btnPhraseFeature_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 241);
+            this.ClientSize = new System.Drawing.Size(418, 384);
+            this.Controls.Add(this.btnPhraseFeature);
             this.Controls.Add(this.btnAnalyzePhrase);
             this.Controls.Add(this.btnSelectPhraseFiles);
             this.Controls.Add(this.button4);
@@ -137,6 +149,7 @@
         private System.Windows.Forms.Button btnSelectPhraseFiles;
         private System.Windows.Forms.OpenFileDialog openFileDialogPhrase;
         private System.Windows.Forms.Button btnAnalyzePhrase;
+        private System.Windows.Forms.Button btnPhraseFeature;
     }
 }
 
