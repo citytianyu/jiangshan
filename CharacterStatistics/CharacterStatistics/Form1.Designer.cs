@@ -37,6 +37,8 @@
             this.openFileDialogPhrase = new System.Windows.Forms.OpenFileDialog();
             this.btnAnalyzePhrase = new System.Windows.Forms.Button();
             this.btnPhraseFeature = new System.Windows.Forms.Button();
+            this.btnAccPhraseFeature = new System.Windows.Forms.Button();
+            this.btnSentenceFeature = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -113,7 +115,7 @@
             // 
             // btnPhraseFeature
             // 
-            this.btnPhraseFeature.Location = new System.Drawing.Point(139, 218);
+            this.btnPhraseFeature.Location = new System.Drawing.Point(139, 254);
             this.btnPhraseFeature.Name = "btnPhraseFeature";
             this.btnPhraseFeature.Size = new System.Drawing.Size(75, 23);
             this.btnPhraseFeature.TabIndex = 6;
@@ -121,11 +123,33 @@
             this.btnPhraseFeature.UseVisualStyleBackColor = true;
             this.btnPhraseFeature.Click += new System.EventHandler(this.btnPhraseFeature_Click);
             // 
+            // btnAccPhraseFeature
+            // 
+            this.btnAccPhraseFeature.Location = new System.Drawing.Point(139, 214);
+            this.btnAccPhraseFeature.Name = "btnAccPhraseFeature";
+            this.btnAccPhraseFeature.Size = new System.Drawing.Size(75, 23);
+            this.btnAccPhraseFeature.TabIndex = 7;
+            this.btnAccPhraseFeature.Text = " 累积分词";
+            this.btnAccPhraseFeature.UseVisualStyleBackColor = true;
+            this.btnAccPhraseFeature.Click += new System.EventHandler(this.btnAccPhraseFeature_Click);
+            // 
+            // btnSentenceFeature
+            // 
+            this.btnSentenceFeature.Location = new System.Drawing.Point(262, 172);
+            this.btnSentenceFeature.Name = "btnSentenceFeature";
+            this.btnSentenceFeature.Size = new System.Drawing.Size(75, 23);
+            this.btnSentenceFeature.TabIndex = 8;
+            this.btnSentenceFeature.Text = "句法分析";
+            this.btnSentenceFeature.UseVisualStyleBackColor = true;
+            this.btnSentenceFeature.Click += new System.EventHandler(this.btnSentenceFeature_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(418, 384);
+            this.Controls.Add(this.btnSentenceFeature);
+            this.Controls.Add(this.btnAccPhraseFeature);
             this.Controls.Add(this.btnPhraseFeature);
             this.Controls.Add(this.btnAnalyzePhrase);
             this.Controls.Add(this.btnSelectPhraseFiles);
@@ -150,6 +174,8 @@
         private System.Windows.Forms.OpenFileDialog openFileDialogPhrase;
         private System.Windows.Forms.Button btnAnalyzePhrase;
         private System.Windows.Forms.Button btnPhraseFeature;
+        private System.Windows.Forms.Button btnAccPhraseFeature;
+        private System.Windows.Forms.Button btnSentenceFeature;
     }
 }
 
