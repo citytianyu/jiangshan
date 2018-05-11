@@ -145,6 +145,8 @@ namespace CharacterStatistics
         Dictionary<string, int>[] AccTable = null;
         int[] Sums = null;
 
+        char[] StopSymbols = { '，', '。', '”', '“', '！', '？', '：', '；' };
+
         private void button3_Click(object sender, EventArgs e)
         {
             if (openFileDialog.FileName == "")
@@ -164,7 +166,8 @@ namespace CharacterStatistics
                 string result = "";
                 for (int i = 0; i < volumeContents.Count; ++i)
                 {
-                    result += (i + 1).ToString() + " " + countDialogs(volumeContents[i]) + "\n";
+                    float avg = 0.0f;
+                    result += (i + 1).ToString() + " " + countDialogs(volumeContents[i], out avg) + "\t" + avg.ToString() + "\n";
                 }
 
                 saveToFile(currFilename, result, "dialogStats", "1");
@@ -173,12 +176,13 @@ namespace CharacterStatistics
             }
         }
 
-        private int countDialogs(string content)
+        private int countDialogs(string content, out float avgDialogCharNum)
         {
             int left = 0;
             int right = left;
 
             int sum = 0;
+            int count = 0;
             left = content.IndexOf('“');
 
             do
@@ -196,10 +200,12 @@ namespace CharacterStatistics
                 }
 
                 sum += right - left - 1;
+                count++;
                 left = content.IndexOf('“', right + 1);
             }
             while (left != -1 && left < content.Length);
 
+            avgDialogCharNum = (float)sum / count;
             return sum;
         }
 
@@ -265,7 +271,6 @@ namespace CharacterStatistics
 
   
             MegaTable = new Dictionary<string, int>[table.Count];
-            AccTable = new Dictionary<string, int>[table.Count];
             Sums = new int[table.Count];
 
             int volumeIndex = 0;
@@ -274,8 +279,6 @@ namespace CharacterStatistics
                 string fileContent = System.IO.File.ReadAllText(filenames[pair.Value], Encoding.UTF8);
 
                 MegaTable[volumeIndex] = countPhrase(filenames[pair.Value], fileContent, pair.Key.ToString(), out Sums[volumeIndex]);
-
-                accumulatePhrases(filenames[pair.Value], pair.Key.ToString(), volumeIndex - 1, volumeIndex);
 
                 volumeIndex++;
             }
@@ -469,6 +472,177 @@ namespace CharacterStatistics
 
                 saveToFile(cachePath, result, "PhraseStats\\PhraseFeature", (i + 1).ToString());
             }
+
+            MessageBox.Show("Done!");
+        }
+
+        private void btnAccPhraseFeature_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogPhrase.FileNames.Length == 0)
+            {
+                MessageBox.Show("No Phrase file has been selected.");
+                return;
+            }
+
+            string[] filenames = openFileDialogPhrase.FileNames;
+
+            Dictionary<int, int> table = new Dictionary<int, int>();
+
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                int number = -1;
+                int startIndex = filenames[i].LastIndexOf('\\') + 1;
+                string substr = filenames[i].Substring(startIndex, filenames[i].LastIndexOf('.') - startIndex);
+                if (int.TryParse(substr, out number))
+                {
+                    table.Add(number, i);
+                }
+            }
+
+            var items = from pair in table
+                        orderby pair.Key ascending
+                        select pair;
+
+            AccTable = new Dictionary<string, int>[table.Count];
+
+            int volumeIndex = 0;
+            foreach (KeyValuePair<int, int> pair in items)
+            {
+                accumulatePhrases(filenames[pair.Value], pair.Key.ToString(), volumeIndex - 1, volumeIndex);
+
+                volumeIndex++;
+            }
+
+            MessageBox.Show("Done!");
+        }
+
+        private void btnSentenceFeature_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogPhrase.FileNames.Length == 0)
+            {
+                MessageBox.Show("No Phrase file has been selected.");
+                return;
+            }
+
+            string[] filenames = openFileDialogPhrase.FileNames;
+
+            Dictionary<int, int> table = new Dictionary<int, int>();
+
+            for (int i = 0; i < filenames.Length; i++)
+            {
+                int number = -1;
+                int startIndex = filenames[i].LastIndexOf('\\') + 1;
+                string substr = filenames[i].Substring(startIndex, filenames[i].LastIndexOf('.') - startIndex);
+                if (int.TryParse(substr, out number))
+                {
+                    table.Add(number, i);
+                }
+            }
+
+            var items = from pair in table
+                        orderby pair.Key ascending
+                        select pair;
+
+            foreach (KeyValuePair<int, int> pair in items)
+            {
+                int volumeIndex = pair.Key - 1;
+
+                string fileContent = System.IO.File.ReadAllText(filenames[pair.Value], Encoding.UTF8);
+
+                countSentense(filenames[pair.Value], fileContent, pair.Key.ToString(), volumeIndex);
+            }
+
+            MessageBox.Show("Done!");
+        }
+
+        private void countSentense(string filename, string content, string num, int volumeIndex)
+        {
+            int sentenseCount = 0;
+
+            int left = 0;
+
+            while (left < content.Length && (content[left] == '\t' || StopSymbols.Contains(content[left])))
+                left++;
+
+            do
+            {
+                int length = 0;
+                int right = content.IndexOfAny(StopSymbols, left);
+                if (right == -1)
+                    length = content.Length - left;
+                else
+                    length = right - left;
+
+                if (length == 0)
+                    break;
+
+                sentenseCount++;
+
+                // find next valid left
+                if (right == -1)
+                    break;
+                else
+                    left = right + 1;
+
+                while (left < content.Length && (content[left] == '\t' || StopSymbols.Contains(content[left])) )
+                    left++;
+            }
+            while (left < content.Length);
+
+            string result = "";
+
+            // 总句子数
+            result += "句子数\t" + sentenseCount.ToString() + "\n";
+
+            // 平均句子单词数
+            float avgPhraseNum = (float)Sums[volumeIndex] / sentenseCount;
+            result += "平均句子词数\t" + avgPhraseNum.ToString() + "\n";
+
+            // 平均句子字数
+            float avgCharNum = (float)content.Length / sentenseCount;
+            result += "平均句子字数\t" + avgCharNum.ToString() + "\n";
+
+            // 人称代词比例
+            if (MegaTable[volumeIndex].ContainsKey("我"))
+            {
+                int meNum = MegaTable[volumeIndex]["我"];
+                float ratioMe = (float)meNum / Sums[volumeIndex] * 100.0f;
+                result += "我\t" + meNum.ToString() + "\t" + ratioMe.ToString() + "%\n";
+            }
+
+            if (MegaTable[volumeIndex].ContainsKey("你"))
+            {
+                int youNum = MegaTable[volumeIndex]["你"];
+                float ratioYou = (float)youNum / Sums[volumeIndex] * 100.0f;
+                result += "你\t" + youNum.ToString() + "\t" + ratioYou.ToString() + "%\n";
+            }
+
+            if (MegaTable[volumeIndex].ContainsKey("他"))
+            {
+                int heNum = MegaTable[volumeIndex]["他"];
+                float ratioHe = (float)heNum / Sums[volumeIndex] * 100.0f;
+                result += "他\t" + heNum.ToString() + "\t" + ratioHe.ToString() + "%\n";
+            }
+
+            if (MegaTable[volumeIndex].ContainsKey("她"))
+            {
+                int sheNum = MegaTable[volumeIndex]["她"];
+                float ratioShe = (float)sheNum / Sums[volumeIndex] * 100.0f;
+                result += "她\t" + sheNum.ToString() + "\t" + ratioShe.ToString() + "%\n";
+            }
+
+            // 标点数比例
+            foreach (var symbol in StopSymbols)
+            {
+                if (MegaTable[volumeIndex].ContainsKey(symbol.ToString()))
+                {
+                    int symbolNum = MegaTable[volumeIndex][symbol.ToString()];
+                    float ratio = (float)symbolNum / Sums[volumeIndex] * 100.0f;
+                    result += symbol + "\t" + symbolNum.ToString() + "\t" + ratio.ToString() + "%\n";
+                }
+            }
+
+            saveToFile(filename, result, "SentenseStats\\SentenseFeature", num);
         }
     }
 }
